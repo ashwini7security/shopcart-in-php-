@@ -1,24 +1,21 @@
 <?php
-#session_name('products');
-
 session_start();
-#$product = $_POST["products[]"];
 
-#$_SESSION["products"] = $product;
+/*
+$pdt = $_POST['product[]'];
+$_SESSION['check'] = $pdt;
 
-if(isset($_POST['submit']))
-{
-	$product = $_POST["products[]"];
-	$_SESSION['check'] = $product;
-		
-}
-#if (!isset($_SESSION['check']? 	'checked':''));
-
-
-
+print_r ($pdt); */
+/*
+elseif(!isset($_POST['product']))
+	$_SESSION['check'] = 'N';
+else
+	$_SESSION['check'] = $product['product_id'];
+ */	
 
 
-echo "Welcome to shopping world";
+
+
 include_once("db_info.php");
 
 if(isset($_REQUEST['op']))
@@ -30,7 +27,12 @@ switch ($op)
 {
 
 default :
-	echo "<a href='index.php' >Home </a> <form action='index.php?op=confirms' method='post'> " ;
+	
+
+#	print_r ($_SESSION['check']);
+
+	echo "Welcome to shopping world";
+	echo "<a href='index.php' >Home </a> <form action='index.php?op=confirms' method='post' name='product_list'  > " ;
 
 # fetching data from table
 $fetching_data = mysql_query("select * from products");
@@ -42,8 +44,9 @@ $fetching_data = mysql_query("select * from products");
 
 	while ($products = mysql_fetch_assoc($fetching_data))
 	{
+		$checked = (in_array($products['product_id'],$_SESSION['check']) )? "checked" : "" ;
 		echo "<tr><td>" . 
-		"	<input name=\"products[]\" type=\"checkbox\" value='" .$products['product_id'] ."'   >" . "</td><td>" . $products['product_id'] . "</td><td>" . $products['title'] . "</td><td>" . $products['description'] . "</td><td>" .  "$". $products['price'] . "</td></tr>" ; 
+		"<input name= 'products[]'  type=\"checkbox\" value='" .$products['product_id'] ."' $checked >" . "</td><td>" . $products['product_id'] . "</td><td>" . $products['title'] . "</td><td>" . $products['description'] . "</td><td>" .  "$". $products['price'] . "</td></tr>" ; 
 	}
 
 	echo "</table>";
@@ -56,9 +59,15 @@ $fetching_data = mysql_query("select * from products");
 #mysql_close($connect);
 	echo "</form>";
 	break;
+
+
 case 'confirms':
+
+		$_SESSION['check'] = $_POST['products'];
+	#	print_r ($_SESSION['check']) ;
+
 		echo "<a href='index.php'>Cancel shopping <a>
-<form action='index.php?op=thanks' method='post'> " ;
+<form action='index.php?op=thanks' method='post' name='product_selected'> " ;
 
 
 /**
@@ -78,6 +87,7 @@ echo "<table border=\"2\">";
 echo "<tr><th>Product_id</th><th>Title</th></tr>"; 
 /*$_POST is predefine variable in php  fetching products id of product selected by user*/
 $product_id = $_POST['products'] ;
+
 
 
 $result = mysql_query('SELECT product_id,title FROM products WHERE product_id IN ('.implode(',',$_POST['products']).')');
