@@ -1,21 +1,6 @@
 <?php
 session_start();
 
-/*
-$pdt = $_POST['product[]'];
-$_SESSION['check'] = $pdt;
-
-print_r ($pdt); */
-/*
-elseif(!isset($_POST['product']))
-	$_SESSION['check'] = 'N';
-else
-	$_SESSION['check'] = $product['product_id'];
- */	
-
-
-
-
 include_once("db_info.php");
 
 if(isset($_REQUEST['op']))
@@ -25,14 +10,75 @@ else
 
 switch ($op)
 {
-
 default :
+
+/**
+*It contain login authentication logic of user
+*/
+echo "<h2> Welcome to shopping world</h2> " ;
+
+echo "<form method='post' action ='index.php?op=loginlogic' name='login' >
+<label>Username </label> <br>
+<input type='text' name='username' value='' > <br>
+<label>Password </label> <br>
+<input type='password' name='password' value='' > <br>
+<input type='submit' name='submit' value='submit'>  
+</form> ";
+
+
+break;
+case 'loginlogic':
+
+
+$username = $_POST['username'];
+$password = $_POST['password'];
+
+#$username = $mysql_real_escape_string($username);
+#$password = $mysql_real_escape_string($password);
+
+#$username = $stripslashes($username);
+#$password = $stripslashes($password);
+
+
+$sql =mysql_query("SELECT *  FROM user_details WHERE username = '$username' AND password = '$password'");
+
+if($sql)
+{
+	$count = mysql_num_rows($sql);
+}
+else{
+	echo "error with query";
+}
+
+$result = mysql_fetch_array($sql);
+if ($count==1)
+{
+#	session_start();
+	$_SESSION['userid'] = $row['id'];
+	$_SESSION['username'] = $username;
+	header ('Location:index.php?op=home');
+}
+
+else
+{
+	echo "Login or password is incorrect";
+	echo "<a href='index.php'> Login </a>";
+
+}
+
+break;
+case 'home':
+		
+	if(!isset($_SESSION['username']))
+		{
+			header ('location: index.php');
+		}
+#	$_SESSION['username'] = $_POST['username'] ; 
 	
+#	echo "Welcome" . $_SESSION['username']  . "<br>" ; 
 
-#	print_r ($_SESSION['check']);
-
-	echo "Welcome to shopping world";
-	echo "<a href='index.php' >Home </a> <form action='index.php?op=confirms' method='post' name='product_list'  > " ;
+	echo "<a href='index.php?op=home' >Home </a><a href='index.php?q=logout' > Logout </a> " ;
+	echo "<form action='index.php?op=confirms' method='post' name='product_list'  > " ;
 
 # fetching data from table
 $fetching_data = mysql_query("select * from products");
@@ -44,7 +90,7 @@ $fetching_data = mysql_query("select * from products");
 
 	while ($products = mysql_fetch_assoc($fetching_data))
 	{
-		$checked = (in_array($products['product_id'],$_SESSION['check']) )? "checked" : "" ;
+		$checked = in_array($products['product_id'],$_SESSION['check']) ? "checked" : " " ;
 		echo "<tr><td>" . 
 		"<input name= 'products[]'  type=\"checkbox\" value='" .$products['product_id'] ."' $checked >" . "</td><td>" . $products['product_id'] . "</td><td>" . $products['title'] . "</td><td>" . $products['description'] . "</td><td>" .  "$". $products['price'] . "</td></tr>" ; 
 	}
@@ -52,40 +98,31 @@ $fetching_data = mysql_query("select * from products");
 	echo "</table>";
 	echo "<input type=\"submit\" name=\"submit\" value=\"checkout\">";
 	
-
-
-
-#closing database connection 
-#mysql_close($connect);
 	echo "</form>";
 	break;
 
 
 case 'confirms':
 
-		$_SESSION['check'] = $_POST['products'];
-	#	print_r ($_SESSION['check']) ;
 
-		echo "<a href='index.php'>Cancel shopping <a>
+		$_SESSION['check'] = $_POST['products'];
+
+
+		echo "<a href='index.php?op=home'>Cancel shopping <a>
+			<a href='index.php' > Logout </a> 
 <form action='index.php?op=thanks' method='post' name='product_selected'> " ;
 
 
-/**
-echo "<pre> ";
-print_r ($_POST['products']);
-echo "</pre>";
- */
-# including database information file to connect to database.
-/* include keyword used for including file in php */
+
 
 echo "<h2>Your selected products are:</h2>" . "<br>";
-echo "<a href='index.php?op=shop'><h4>I want to Order more:</h4></a>" . "<br>";
+echo "<a href='index.php?op=home'><h4>I want to Order more:</h4></a>" . "<br>";
 
 #fetching all selected product list 
 
 echo "<table border=\"2\">";
 echo "<tr><th>Product_id</th><th>Title</th></tr>"; 
-/*$_POST is predefine variable in php  fetching products id of product selected by user*/
+
 $product_id = $_POST['products'] ;
 
 
@@ -108,9 +145,17 @@ break;
 
 case 'thanks':
 	echo "<h4> Thanks your shipment will reach in 10 days. </h4> ";
-	echo "<a href=index.php?op=shop >I wanna do more shopping </a>" .
-	"<br>"	."<a href=index.php >Home </a>" ;
-	
-	
+	echo "<a href=index.php?op=home >I wanna do more shopping </a>" .
+	"<br>"	."<a href=index.php?op=home >Home </a><br>" ;
+	echo "<a href='index.php?op=logout'> Logout </a>";
+
+
+break;
+
+case 'logout':
+	session_destroy();
+
+	header ('location: index.php') ; 
+ 	
 }
 ?>
